@@ -19,7 +19,7 @@ import java.util.ArrayList;
 public class Servidor {
 
     private static byte[] incoming = new byte[256];
-    private static final int PORT = 8123;
+    private static final int PORT = 8000;
 
     private static DatagramSocket socket;
 
@@ -48,22 +48,26 @@ public class Servidor {
         System.out.println("Server started on port " + PORT);
 
         while (true) {
-            DatagramPacket packet = new DatagramPacket(incoming, incoming.length); // prepare packet
+            DatagramPacket packet = new DatagramPacket(incoming, incoming.length);
             try {
-                socket.receive(packet); // receive packet
+                socket.receive(packet);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
 
-            String message = new String(packet.getData(), 0, packet.getLength()); // create a string
+            String message = new String(packet.getData(), 0, packet.getLength());
             System.out.println("Server received: " + message);
 
             if (message.contains("init;")) {
                 users.add(packet.getPort());
-            } // forward
-            else {
-                int userPort = packet.getPort();  // get port from the packet
-                byte[] byteMessage = message.getBytes(); // convert the string to bytes
+            } else if (message.startsWith("Archivo:")) {
+                // Aquí puedes manejar la información del archivo
+                String fileName = message.substring("Archivo:".length()).trim();
+                System.out.println("Received file: " + fileName);
+                // Puedes realizar acciones adicionales, como guardar el archivo o procesar la información según tus necesidades.
+            } else {
+                int userPort = packet.getPort();
+                byte[] byteMessage = message.getBytes();
 
                 // forward to all other users (except the one who sent the message)
                 for (int forward_port : users) {
@@ -77,7 +81,6 @@ public class Servidor {
                     }
                 }
             }
-
         }
     }
 }

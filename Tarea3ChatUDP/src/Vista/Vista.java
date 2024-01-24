@@ -15,6 +15,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -53,8 +55,8 @@ public class Vista extends JFrame {
     private static final int SERVER_PORT = 8000; // send to server
 
     private static final JTextArea messageArea = new JTextArea();
-
     private static final JTextField inputBox = new JTextField();
+    private static final JButton fileButton = new JButton("Seleccionar Archivo");
 
     public static void main(String[] args) throws IOException {
         // Pedir al usuario que ingrese su nombre
@@ -87,17 +89,25 @@ public class Vista extends JFrame {
         inputBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String temp = identifier + ";" + inputBox.getText(); // message to send
-                messageArea.append(inputBox.getText() + "\n"); // update messages on screen
-                byte[] msg = temp.getBytes(); // convert to bytes
-                inputBox.setText(""); // remove text from input box
+                sendMessage(identifier + ";" + inputBox.getText());
+                String current = messageArea.getText();
+                messageArea.setText(current + identifier + ";" + inputBox.getText() + "\n");
+                inputBox.setText("");
+            }
+        });
 
-                // create a packet & send
-                DatagramPacket send = new DatagramPacket(msg, msg.length, address, SERVER_PORT);
-                try {
-                    socket.send(send);
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
+        fileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                int result = fileChooser.showOpenDialog(Vista.this);
+
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    // Obtener la ruta del archivo seleccionado
+                    String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+
+                    // Enviar la URL o la ruta del archivo a través del chat
+                    sendMessage(identifier + ";Archivo:" + filePath);
                 }
             }
         });
@@ -106,7 +116,19 @@ public class Vista extends JFrame {
         setLayout(new BorderLayout());
         add(new JScrollPane(messageArea), BorderLayout.CENTER);
         add(inputBox, BorderLayout.SOUTH);
+        add(fileButton, BorderLayout.NORTH); // Agregar el botón para seleccionar archivos
         setSize(550, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    // Método para enviar mensajes a través del chat
+    private void sendMessage(String message) {
+        byte[] msg = message.getBytes();
+        DatagramPacket send = new DatagramPacket(msg, msg.length, address, SERVER_PORT);
+        try {
+            socket.send(send);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }
