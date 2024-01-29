@@ -18,26 +18,28 @@ import java.util.ArrayList;
  */
 public class Servidor {
 
-    private static byte[] incoming = new byte[256];
-    private static final int PORT = 8000;
+    private static byte[] datosEntrantes = new byte[256];
+    private static final int PUERTO = 8000;
 
     private static DatagramSocket socket;
 
     static {
         try {
-            socket = new DatagramSocket(PORT);
+            socket = new DatagramSocket(PUERTO);
         } catch (SocketException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static ArrayList<Integer> users = new ArrayList<>();
+    private static ArrayList<Integer> usuarios = new ArrayList<>();
 
-    private static final InetAddress address;
+    private static final InetAddress direccion;
 
     static {
         try {
-            address = InetAddress.getByName("localhost");
+            // Esto se tendría que modificar con la IP si queremos que otro equipo sea el host.
+            // SÓLO en el caso en el que otra persona quiera ser el servidor. Si solo se quiere chatear, no haría falta.
+            direccion = InetAddress.getByName("localhost");
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
@@ -45,36 +47,36 @@ public class Servidor {
 
     public static void main(String[] args) {
 
-        System.out.println("Server started on port " + PORT);
+        System.out.println("Servidor iniciado en el puerto " + PUERTO);
 
         while (true) {
-            DatagramPacket packet = new DatagramPacket(incoming, incoming.length);
+            DatagramPacket paquete = new DatagramPacket(datosEntrantes, datosEntrantes.length);
             try {
-                socket.receive(packet);
+                socket.receive(paquete);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
 
-            String message = new String(packet.getData(), 0, packet.getLength());
-            System.out.println("Server received: " + message);
+            String mensaje = new String(paquete.getData(), 0, paquete.getLength());
+            System.out.println("Servidor recibió: " + mensaje);
 
-            if (message.contains("init;")) {
-                users.add(packet.getPort());
-            } else if (message.startsWith("Archivo:")) {
+            if (mensaje.contains("init;")) {
+                usuarios.add(paquete.getPort());
+            } else if (mensaje.startsWith("Archivo:")) {
                 // Aquí puedes manejar la información del archivo
-                String fileName = message.substring("Archivo:".length()).trim();
-                System.out.println("Received file: " + fileName);
+                String nombreArchivo = mensaje.substring("Archivo:".length()).trim();
+                System.out.println("Archivo recibido: " + nombreArchivo);
                 // Puedes realizar acciones adicionales, como guardar el archivo o procesar la información según tus necesidades.
             } else {
-                int userPort = packet.getPort();
-                byte[] byteMessage = message.getBytes();
+                int puertoUsuario = paquete.getPort();
+                byte[] mensajeBytes = mensaje.getBytes();
 
-                // forward to all other users (except the one who sent the message)
-                for (int forward_port : users) {
-                    if (forward_port != userPort) {
-                        DatagramPacket forward = new DatagramPacket(byteMessage, byteMessage.length, address, forward_port);
+                // Reenviar a todos los usuarios (excepto al que envió el mensaje)
+                for (int puertoReenvio : usuarios) {
+                    if (puertoReenvio != puertoUsuario) {
+                        DatagramPacket reenvio = new DatagramPacket(mensajeBytes, mensajeBytes.length, direccion, puertoReenvio);
                         try {
-                            socket.send(forward);
+                            socket.send(reenvio);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }

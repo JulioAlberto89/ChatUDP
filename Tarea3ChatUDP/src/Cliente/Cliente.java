@@ -13,30 +13,31 @@ import javax.swing.JTextArea;
  *
  * @author Julio A Mayoral
  */
-public class Cliente extends Thread{
+public class Cliente extends Thread {
+
     private DatagramSocket socket;
-    private byte[] incoming = new byte[256];
+    private byte[] datosEntrantes = new byte[256];
 
-    private JTextArea textArea;
+    private JTextArea areaTexto;
 
-    public Cliente(DatagramSocket socket, JTextArea textArea) {
+    public Cliente(DatagramSocket socket, JTextArea areaTexto) {
         this.socket = socket;
-        this.textArea = textArea;
+        this.areaTexto = areaTexto;
     }
 
     @Override
     public void run() {
-        System.out.println("starting thread");
+        System.out.println("Iniciando hilo");
         while (true) {
-            DatagramPacket packet = new DatagramPacket(incoming, incoming.length);
+            DatagramPacket paquete = new DatagramPacket(datosEntrantes, datosEntrantes.length);
             try {
-                socket.receive(packet);
+                socket.receive(paquete);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            String message = new String(packet.getData(), 0, packet.getLength()) + "\n";
-            String current = textArea.getText();
-            textArea.setText(current + message);
+            String mensaje = new String(paquete.getData(), 0, paquete.getLength()) + "\n";
+            String actual = areaTexto.getText();
+            areaTexto.setText(actual + mensaje);
         }
     }
 }

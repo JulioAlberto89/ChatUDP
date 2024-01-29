@@ -34,99 +34,105 @@ public class Vista extends JFrame {
 
     static {
         try {
-            socket = new DatagramSocket(); // init to any available port
+            socket = new DatagramSocket(); // inicializar en cualquier puerto disponible
         } catch (SocketException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static InetAddress address;
+    private static InetAddress direccion;
 
     static {
         try {
-            address = InetAddress.getByName("localhost");
+            // IP a cambiar por la IP de la otra persona con la que se quiere chatear.
+            direccion = InetAddress.getByName("localhost");
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static String identifier;
+    private static String identificador;
 
-    private static final int SERVER_PORT = 8000; // send to server
+    private static final int PUERTO_SERVIDOR = 8000; // enviar al servidor
 
-    private static final JTextArea messageArea = new JTextArea();
-    private static final JTextField inputBox = new JTextField();
-    private static final JButton fileButton = new JButton("Seleccionar Archivo");
+    private static final JTextArea areaMensajes = new JTextArea();
+    private static final JTextField cajaTexto = new JTextField();
+    private static final JButton botonArchivo = new JButton("Seleccionar Archivo");
 
     public static void main(String[] args) throws IOException {
         // Pedir al usuario que ingrese su nombre
-        identifier = JOptionPane.showInputDialog("Ingrese su nombre:");
+        identificador = JOptionPane.showInputDialog("Ingrese su nombre:");
 
-        if (identifier == null || identifier.trim().isEmpty()) {
-            // Si el usuario cancela o no ingresa un nombre, salimos de la aplicación
+        if (identificador == null || identificador.trim().isEmpty()) {
+            // Si el usuario cancela o no ingresa un nombre, salir de la aplicación
             System.exit(0);
         }
 
-        // thread for receiving messages
-        Cliente clientThread = new Cliente(socket, messageArea);
-        clientThread.start();
+        // Hilo para recibir mensajes
+        Cliente hiloCliente = new Cliente(socket, areaMensajes);
+        hiloCliente.start();
 
-        // send initialization message to the server
-        byte[] uuid = ("init;" + identifier).getBytes();
-        DatagramPacket initialize = new DatagramPacket(uuid, uuid.length, address, SERVER_PORT);
-        socket.send(initialize);
+        // Enviar mensaje de inicialización al servidor
+        byte[] uuid = ("init;" + identificador).getBytes();
+        DatagramPacket inicializar = new DatagramPacket(uuid, uuid.length, direccion, PUERTO_SERVIDOR);
+        socket.send(inicializar);
 
         SwingUtilities.invokeLater(() -> {
-            new Vista().setVisible(true); // launch GUI
+            new Vista().setVisible(true); // lanzar la interfaz gráfica
         });
     }
 
     public Vista() {
-        super("Chat Client - " + identifier);
+        super("Cliente de Chat - " + identificador);
 
-        messageArea.setEditable(false);
+        areaMensajes.setEditable(false);
 
-        inputBox.addActionListener(new ActionListener() {
+        cajaTexto.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                sendMessage(identifier + ";" + inputBox.getText());
-                String current = messageArea.getText();
-                messageArea.setText(current + identifier + ";" + inputBox.getText() + "\n");
-                inputBox.setText("");
+                enviarMensaje(identificador + " dice: " + cajaTexto.getText());
+                String actual = areaMensajes.getText();
+                areaMensajes.setText(actual + identificador + ": " + cajaTexto.getText() + "\n");
+                cajaTexto.setText("");
             }
         });
 
-        fileButton.addActionListener(new ActionListener() {
+        botonArchivo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JFileChooser fileChooser = new JFileChooser();
-                int result = fileChooser.showOpenDialog(Vista.this);
+                JFileChooser seleccionadorArchivo = new JFileChooser();
+                int resultado = seleccionadorArchivo.showOpenDialog(Vista.this);
 
-                if (result == JFileChooser.APPROVE_OPTION) {
+                if (resultado == JFileChooser.APPROVE_OPTION) {
                     // Obtener la ruta del archivo seleccionado
-                    String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+                    String rutaArchivo = seleccionadorArchivo.getSelectedFile().getAbsolutePath();
 
                     // Enviar la URL o la ruta del archivo a través del chat
-                    sendMessage(identifier + ";Archivo:" + filePath);
+                    String mensaje = identificador + " envió el archivo: " + rutaArchivo;
+                    enviarMensaje(mensaje);
+
+                    // Añadir el mensaje al JTextArea del cliente que envía el archivo
+                    String actual = areaMensajes.getText();
+                    areaMensajes.setText(actual + mensaje + "\n");
                 }
             }
         });
 
-        // put everything on screen
+        // colocar todo en la pantalla
         setLayout(new BorderLayout());
-        add(new JScrollPane(messageArea), BorderLayout.CENTER);
-        add(inputBox, BorderLayout.SOUTH);
-        add(fileButton, BorderLayout.NORTH); // Agregar el botón para seleccionar archivos
+        add(new JScrollPane(areaMensajes), BorderLayout.CENTER);
+        add(cajaTexto, BorderLayout.SOUTH);
+        add(botonArchivo, BorderLayout.NORTH); // Agregar el botón para seleccionar archivos
         setSize(550, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     // Método para enviar mensajes a través del chat
-    private void sendMessage(String message) {
-        byte[] msg = message.getBytes();
-        DatagramPacket send = new DatagramPacket(msg, msg.length, address, SERVER_PORT);
+    private void enviarMensaje(String mensaje) {
+        byte[] msg = mensaje.getBytes();
+        DatagramPacket enviar = new DatagramPacket(msg, msg.length, direccion, PUERTO_SERVIDOR);
         try {
-            socket.send(send);
+            socket.send(enviar);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
