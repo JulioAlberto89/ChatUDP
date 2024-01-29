@@ -17,10 +17,14 @@ import java.util.ArrayList;
  * @author Julio A Mayoral
  */
 public class Servidor {
+    
+    //El servidor está encargado de recibir mensajes de los clientes y 
+    //reenviarlos a todos los demás clientes conectados. 
+    //Además, maneja los mensajes relacionados con archivos.
 
     private static byte[] datosEntrantes = new byte[256];
     private static final int PUERTO = 8000;
-
+    //Aquí se establece un socket en el puerto para escuchar las comunicaciones.
     private static DatagramSocket socket;
 
     static {
@@ -32,16 +36,18 @@ public class Servidor {
     }
 
     private static ArrayList<Integer> usuarios = new ArrayList<>();
-
-    private static final InetAddress direccion;
-
-    static {
-        try {
-            // Esto se tendría que modificar con la IP si queremos que otro equipo sea el host.
-            // SÓLO en el caso en el que otra persona quiera ser el servidor. Si solo se quiere chatear, no haría falta.
-            direccion = InetAddress.getByName("localhost");
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
+    
+    private static InetAddress direccion = getInetAddress();
+    
+    //Este método se encarga de obtener la dirección IP correspondiente a "localhost".
+    private static InetAddress getInetAddress() {
+        try
+        {
+            return InetAddress.getByName("localhost");
+        } catch (UnknownHostException e)
+        {
+            e.printStackTrace(); // O manejar la excepción según tus necesidades
+            return null; // O lanzar una excepción más controlada
         }
     }
 
@@ -49,6 +55,7 @@ public class Servidor {
 
         System.out.println("Servidor iniciado en el puerto " + PUERTO);
 
+        //El servidor está en un bucle infinito, esperando recibir mensajes de los clientes.
         while (true) {
             DatagramPacket paquete = new DatagramPacket(datosEntrantes, datosEntrantes.length);
             try {
@@ -63,10 +70,10 @@ public class Servidor {
             if (mensaje.contains("init;")) {
                 usuarios.add(paquete.getPort());
             } else if (mensaje.startsWith("Archivo:")) {
-                // Aquí puedes manejar la información del archivo
+                //
                 String nombreArchivo = mensaje.substring("Archivo:".length()).trim();
                 System.out.println("Archivo recibido: " + nombreArchivo);
-                // Puedes realizar acciones adicionales, como guardar el archivo o procesar la información según tus necesidades.
+                //
             } else {
                 int puertoUsuario = paquete.getPort();
                 byte[] mensajeBytes = mensaje.getBytes();

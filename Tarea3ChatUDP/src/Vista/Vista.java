@@ -32,21 +32,27 @@ public class Vista extends JFrame {
 
     private static final DatagramSocket socket;
 
-    static {
-        try {
+    static
+    {
+        try
+        {
             socket = new DatagramSocket(); // inicializar en cualquier puerto disponible
-        } catch (SocketException e) {
+        } catch (SocketException e)
+        {
             throw new RuntimeException(e);
         }
     }
 
     private static InetAddress direccion;
 
-    static {
-        try {
+    static
+    {
+        try
+        {
             // IP a cambiar por la IP de la otra persona con la que se quiere chatear.
             direccion = InetAddress.getByName("localhost");
-        } catch (UnknownHostException e) {
+        } catch (UnknownHostException e)
+        {
             throw new RuntimeException(e);
         }
     }
@@ -63,7 +69,8 @@ public class Vista extends JFrame {
         // Pedir al usuario que ingrese su nombre
         identificador = JOptionPane.showInputDialog("Ingrese su nombre:");
 
-        if (identificador == null || identificador.trim().isEmpty()) {
+        if (identificador == null || identificador.trim().isEmpty())
+        {
             // Si el usuario cancela o no ingresa un nombre, salir de la aplicación
             System.exit(0);
         }
@@ -77,7 +84,8 @@ public class Vista extends JFrame {
         DatagramPacket inicializar = new DatagramPacket(uuid, uuid.length, direccion, PUERTO_SERVIDOR);
         socket.send(inicializar);
 
-        SwingUtilities.invokeLater(() -> {
+        SwingUtilities.invokeLater(() ->
+        {
             new Vista().setVisible(true); // lanzar la interfaz gráfica
         });
     }
@@ -103,7 +111,8 @@ public class Vista extends JFrame {
                 JFileChooser seleccionadorArchivo = new JFileChooser();
                 int resultado = seleccionadorArchivo.showOpenDialog(Vista.this);
 
-                if (resultado == JFileChooser.APPROVE_OPTION) {
+                if (resultado == JFileChooser.APPROVE_OPTION)
+                {
                     // Obtener la ruta del archivo seleccionado
                     String rutaArchivo = seleccionadorArchivo.getSelectedFile().getAbsolutePath();
 
@@ -131,9 +140,11 @@ public class Vista extends JFrame {
     private void enviarMensaje(String mensaje) {
         byte[] msg = mensaje.getBytes();
         DatagramPacket enviar = new DatagramPacket(msg, msg.length, direccion, PUERTO_SERVIDOR);
-        try {
+        try
+        {
             socket.send(enviar);
-        } catch (IOException ex) {
+        } catch (IOException ex)
+        {
             throw new RuntimeException(ex);
         }
     }

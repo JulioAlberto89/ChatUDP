@@ -17,6 +17,7 @@ public class Cliente extends Thread {
 
     private DatagramSocket socket;
     private byte[] datosEntrantes = new byte[256];
+    //El cliente establece un socket para comunicarse.
 
     private JTextArea areaTexto;
 
