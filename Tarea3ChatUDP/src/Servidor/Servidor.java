@@ -23,7 +23,7 @@ public class Servidor {
     //Además, maneja los mensajes relacionados con archivos.
 
     private static byte[] datosEntrantes = new byte[256];
-    private static final int PUERTO = 8000;
+    private static final int PUERTO = 8123;
     //Aquí se establece un socket en el puerto para escuchar las comunicaciones.
     private static DatagramSocket socket;
 

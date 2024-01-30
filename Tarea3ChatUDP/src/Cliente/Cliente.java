@@ -16,6 +16,7 @@ import javax.swing.JTextArea;
 public class Cliente extends Thread {
 
     private DatagramSocket socket;
+    //Buffer
     private byte[] datosEntrantes = new byte[256];
     //El cliente establece un socket para comunicarse.
 
