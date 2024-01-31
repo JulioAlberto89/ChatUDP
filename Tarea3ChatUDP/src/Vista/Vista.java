@@ -53,7 +53,7 @@ public class Vista extends JFrame {
 
     private static String identificador;
 
-    private static final int PUERTO_SERVIDOR = 8123; // enviar al servidor
+    private static final int PUERTO_SERVIDOR = 9090; // enviar al servidor
 
     private static final JTextArea areaMensajes = new JTextArea();
     private static final JTextField cajaTexto = new JTextField();

@@ -37,9 +37,16 @@ public class Cliente extends Thread {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            String mensaje = new String(paquete.getData(), 0, paquete.getLength()) + "\n";
-            String actual = areaTexto.getText();
-            areaTexto.setText(actual + mensaje);
+            String mensaje = new String(paquete.getData(), 0, paquete.getLength());
+            if (mensaje.startsWith("init;")) {
+                String nombre = mensaje.substring(5);
+                areaTexto.setText(areaTexto.getText() + nombre + " se ha conectado\n");
+            } else if (mensaje.startsWith("exit;")) {
+                String nombre = mensaje.substring(5);
+                areaTexto.setText(areaTexto.getText() + nombre + " ha dejado la conversación\n");
+            } else {
+                areaTexto.setText(areaTexto.getText() + mensaje + "\n");
+            }
         }
     }
 }
